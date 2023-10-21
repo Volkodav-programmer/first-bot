@@ -12,6 +12,9 @@ router = Router()
 @router.message(Game.first_number)
 async def first_number(message: Message, state: FSMContext):
     if message.text.isnumeric():
+        if int(message.text) > 1000 or int(message.text) < 0:
+            await message.answer("HUI")
+            return
         await message.answer("Ok. Schreib zweite Zahl.")
         await state.set_data({'first_number':int(message.text)})
         await state.set_state(Game.second_number)
@@ -21,10 +24,18 @@ async def first_number(message: Message, state: FSMContext):
 @router.message(Game.second_number)
 async def second_number(message: Message, state: FSMContext):
     if message.text.isnumeric():
+        if int(message.text) > 1000 or int(message.text) < 0:
+            await message.answer("HUI")
+            return
+
+        first_number1 = (await state.get_data())['first_number']
+        if int(message.text) < first_number1:
+            await message.answer("AGain HUI")
+            await state.set_state(Game.first_number)
+            return
+        await state.set_data({'my_number':randint(first_number1, int(message.text))})
         await message.answer("Ok. Lass uns das Spiel anfangen. Versuch meine Zahle zu reten")
         await state.set_state(Game.game)
-        first_number1 = (await state.get_data())['first_number']
-        await state.set_data({'my_number':randint(first_number1, int(message.text))})
     else:
         await message.answer("Deine Nachricht ist keine Zahl. Versuch noch mal.")
     
